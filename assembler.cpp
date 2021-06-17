@@ -87,7 +87,6 @@ int main(){
 	index = 0;
 	/*read source.txt內容*/
 	while(fscanf(fpSource,"%c",&ch) != -1){
-		printf("%d , %c\n",index,ch);
 		int i = 0;
 		while(ch != '\t'){ //name 
 			//printf("%c",ch);
@@ -99,12 +98,18 @@ int main(){
 		i = 0;
 		while(ch != '\t'){ //type
 			//printf("%c",ch);
+			if(ch == '\n'){
+				break;
+			}
 			source[index].type[i] = ch;
 			i++;
 			fscanf(fpSource,"%c",&ch);
 		}
 		//printf("\n",ch);
-		fscanf(fpSource,"%c",&ch);
+		if(ch != '\n'){
+			fscanf(fpSource,"%c",&ch);
+		}
+		
 		i = 0;
 		while(ch != '\n'){ //content
 			//printf("%c",ch);
@@ -114,13 +119,28 @@ int main(){
 				break;
 			}
 		}
-		printf("%s\n",source[index].type);
+		
+		/*test output*/
+		if(source[index].name[0] == '\0' && source[index].content[0] != '\0'){
+			printf("	%s %s\n",source[index].type,source[index].content);
+		}
+		else if(source[index].name[0] != '\0' && source[index].content[0] == '\0'){
+			printf("%s %s	\n",source[index].name,source[index].type);
+		}
+		else if(source[index].name[0] == '\0' && source[index].content[0] == '\0'){
+			printf("	%s	\n",source[index].type);
+		}
+		else{
+			printf("%s %s %s\n",source[index].name,source[index].type,source[index].content);
+		}
+		/*test output end*/
+		
 		index++;
 			
 	}
-	fclose(fpSource);  //關檔 
+	fclose(fpSource);  //關檔
+	/*end of read source.txt內容*/
 	
-	printf("%d\n",SSize);
 	
 	system("PAUSE");
 	return 0;
