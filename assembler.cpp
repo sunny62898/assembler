@@ -8,7 +8,7 @@ struct opcode{
 };
 
 struct source{
-	int location;
+	int location = 0;
 	char name [16] = {};
 	char type [16] = {};
 	char content [16] = {};
@@ -120,26 +120,97 @@ int main(){
 			}
 		}
 		
-		/*test output*/
-		if(source[index].name[0] == '\0' && source[index].content[0] != '\0'){
-			printf("	%s %s\n",source[index].type,source[index].content);
-		}
-		else if(source[index].name[0] != '\0' && source[index].content[0] == '\0'){
-			printf("%s %s	\n",source[index].name,source[index].type);
-		}
-		else if(source[index].name[0] == '\0' && source[index].content[0] == '\0'){
-			printf("	%s	\n",source[index].type);
-		}
-		else{
-			printf("%s %s %s\n",source[index].name,source[index].type,source[index].content);
-		}
-		/*test output end*/
 		
 		index++;
 			
 	}
 	fclose(fpSource);  //√ˆ¿…
 	/*end of read source.txt§∫Æe*/
+	
+	
+	
+	/*∫‚location*/
+	//START
+	int run = 0;
+	while(source[0].content[run] != '\0'){
+		source[0].location = source[0].location*16 + (source[0].content[run] - '0');
+		run++;
+	}
+	
+	//FIRST
+	source[1].location = source[0].location;
+	//other
+	int count = 0;
+	for(int i = 2;i < SSize-1;i++){
+		if(strcmp(source[i-1].type,"BYTE")  == 0){
+			if(source[i-1].content[0] == 'X'){
+				source[i].location = source[i-1].location+1;
+			}
+			else{
+				run = 2;
+				count = 0;
+				while(source[i-1].content[run] != '\''){
+					count++;
+					run++;
+				}
+				source[i].location = source[i-1].location + count;
+			}
+		} 
+		else if(strcmp(source[i-1].type,"RSUB") == 0){
+			source[i].location = source[i-1].location+3;
+		}
+		else if(strcmp(source[i-1].type,"RESB") == 0){
+			run = 0;
+			while(source[i-1].content[run] != '\0'){
+				source[i].location = source[i].location*10 + (source[i-1].content[run] - '0');
+				run++;
+			}
+			//printf("4096 = %d\n",source[i].location);
+			source[i].location = source[i].location + source[i-1].location;
+		}
+		else{
+			source[i].location = source[i-1].location + 3;
+		}
+		
+		/*test output*/
+		/*if(source[i].name[0] == '\0' && source[i].content[0] != '\0'){
+			printf("%X\t \t%s\t%s\n",source[i].location,source[i].type,source[i].content);
+		}
+		else if(source[i].name[0] != '\0' && source[i].content[0] == '\0'){
+			printf("%X\t%s\t%s\t	\n",source[i].location,source[i].name,source[i].type);
+		}
+		else if(source[i].name[0] == '\0' && source[i].content[0] == '\0'){
+			printf("%X\t \t%s\t	\n",source[i].location,source[i].type);
+		}
+		else{
+			printf("%X\t%s\t%s\t%s\n",source[i].location,source[i].name,source[i].type,source[i].content);
+		}*/
+		/*test output end*/
+	}
+	
+	/*write in intermediate txt*/
+	FILE *intermediate;
+	intermediate = fopen("intermediate.txt","w");
+	fprintf(intermediate,"Loc\t\tSource statment\n\n");
+	for(int i = 0;i < SSize;i++){
+		if(strcmp(source[i].type,"END") == 0){
+			fprintf(intermediate," \t \t%s\t%s\n",source[i].type,source[i].content);
+		}
+		else if(source[i].name[0] == '\0' && source[i].content[0] != '\0'){
+			fprintf(intermediate,"%X\t \t%s\t%s\n",source[i].location,source[i].type,source[i].content);
+		}
+		else if(source[i].name[0] != '\0' && source[i].content[0] == '\0'){
+			fprintf(intermediate,"%X\t%s\t%s\t	\n",source[i].location,source[i].name,source[i].type);
+		}
+		else if(source[i].name[0] == '\0' && source[i].content[0] == '\0'){
+			fprintf(intermediate,"%X\t \t%s\t	\n",source[i].location,source[i].type);
+		}
+		else{
+			fprintf(intermediate,"%X\t%s\t%s\t%s\n",source[i].location,source[i].name,source[i].type,source[i].content);
+		}
+	}
+	/*end of write in intermediate txt*/
+		
 	
 	
 	system("PAUSE");

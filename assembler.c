@@ -3,7 +3,7 @@
 #include <string.h>
 
 struct opcode{
-	String operate[];
+	char operate[16] == "";
 	int operateCode;
 };
 
