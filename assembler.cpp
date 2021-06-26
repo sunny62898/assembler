@@ -12,16 +12,23 @@ struct source{
 	char name [16] = {};
 	char type [16] = {};
 	char content [16] = {};
+	char objectCode[6] = {};
+};
+
+struct symbol{
+	int address = 0;
+	char label[16] = {};
 };
 
 int main(){
 	
+	//pass one
 	/*read file begain*/
 	FILE *fpOp;
 	fpOp = fopen("opcode.txt","r");   //開檔
 	int opSize = 1;
 	char ch;
-	
+	int check = 0;
 	/*算opcode有幾個 */
 	while(fscanf(fpOp,"%c",&ch) != -1){  
 		if(ch == '\n'){
@@ -120,6 +127,28 @@ int main(){
 			}
 		}
 		
+		/*test " "*/
+		check = 0;
+		while(source[index].name[check] != '\0'){
+			if(source[index].name[check] == ' '){
+				source[index].name[check] = '\0';
+			}
+			check++;
+		}
+		check = 0;
+		while(source[index].type[check] != '\0'){
+			if(source[index].type[check] == ' '){
+				source[index].type[check] = '\0';
+			}
+			check++;
+		}
+		check = 0;
+		while(source[index].content[check] != '\0'){
+			if(source[index].content[check] == ' '){
+				source[index].content[check] = '\0';
+			}
+			check++;
+		}
 		
 		index++;
 			
@@ -172,20 +201,6 @@ int main(){
 			source[i].location = source[i-1].location + 3;
 		}
 		
-		/*test output*/
-		/*if(source[i].name[0] == '\0' && source[i].content[0] != '\0'){
-			printf("%X\t \t%s\t%s\n",source[i].location,source[i].type,source[i].content);
-		}
-		else if(source[i].name[0] != '\0' && source[i].content[0] == '\0'){
-			printf("%X\t%s\t%s\t	\n",source[i].location,source[i].name,source[i].type);
-		}
-		else if(source[i].name[0] == '\0' && source[i].content[0] == '\0'){
-			printf("%X\t \t%s\t	\n",source[i].location,source[i].type);
-		}
-		else{
-			printf("%X\t%s\t%s\t%s\n",source[i].location,source[i].name,source[i].type,source[i].content);
-		}*/
-		/*test output end*/
 	}
 	
 	/*write in intermediate txt*/
@@ -209,9 +224,91 @@ int main(){
 			fprintf(intermediate,"%X\t%s\t%s\t%s\n",source[i].location,source[i].name,source[i].type,source[i].content);
 		}
 	}
-	/*end of write in intermediate txt*/
-		
+	fclose(intermediate);  //關檔
+	/*end of write in intermediate.txt*/
 	
+	/*write in symbol.txt*/
+	//count symbol number
+	int symbolnum = 0;
+	for(int i = 0;i < SSize;i++){
+		if(source[i].name[0] != '\0'){
+			symbolnum++;
+		}
+	}
+	
+	//make symbol table
+	int top = 0;
+	struct symbol symbol[symbolnum];
+	for(int i = 0;i < SSize;i++){
+		if(source[i].name[0] != '\0' && strcmp(source[i].name,"COPY") != 0){
+			strcpy(symbol[top].label,source[i].name);
+			symbol[top].address = source[i].location;
+			top++;
+		}
+	}
+	
+	/*output symbol test*/
+	FILE *sym;
+	sym = fopen("SymbolTabel.txt","w");
+	fprintf(sym,"Label name\tAddress\n");
+	for(int i = 0;i < top;i++){
+		fprintf(sym,"%s\t\t%X\n",symbol[i].label,symbol[i].address);
+	}
+	fclose(sym);  //關檔
+	/*end of write in symbol.txt*/
+	
+	//end of pass one
+	
+	
+	//pass two
+	int testX = 0;
+	int other = 0;
+	char cal[4] = {};
+	
+	for(int i = 0;i < SSize;i++){  //run every source
+		testX = 0;
+		other = 0;
+		//opCode
+		for(int j = 0;j < opSize;j++){  
+			if(strcmp(source[i].type,opcode[j].operate) == 0){
+				source[i].objectCode[0] = opcode[j].operateCode[0];
+				source[i].objectCode[1] = opcode[j].operateCode[1];
+				
+				break;
+			}
+		}
+		
+		//location
+		/*find ",X"*/
+		run = 0;
+		while(source[i].content[run] != '\0'){
+			if(source[i].content[run] == ','){
+				if(source[i].content[run+1] == 'X'){
+					testX = 1;
+					break;
+				}
+			}
+			run++;
+		}
+		
+		if(testX == 1){  //有 ",X" 
+			
+		}
+		else if(testX == 0){  //沒有 ",X" 
+			for(int j = 0;j < top;j++){
+				if(strcmp(source[i].content,symbol[j].label) == 0){
+					
+					sprintf(cal,"%X",symbol[j].address);
+					printf("%s\n",cal);
+					break;
+					 
+				}
+				
+			}
+		}
+		
+		
+	}
 	
 	system("PAUSE");
 	return 0;
