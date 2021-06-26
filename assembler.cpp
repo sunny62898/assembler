@@ -61,10 +61,25 @@ int main(){
 		while(ch != '\n'){    //opcode
 			opcode[index].operateCode[i] = ch;
 			if(fscanf(fpOp,"%c",&ch) == -1){
-				break;
+			break;
 			}
 			i++;
 		}	
+		/*test \t*/
+		check = 0;
+		while(opcode[index].operate[check] != '\0'){
+			if(opcode[index].operate[check] == '\t'){
+				opcode[index].operate[check] = '\0';
+			}
+			check++;
+		}
+		check = 0;
+		while(opcode[index].operateCode[check] != '\0'){
+			if(opcode[index].operateCode[check] == '\t'){
+				opcode[index].operateCode[check] = '\0';
+			}
+			check++;
+		}
 		
 		
 		if(ch == '\n'){
@@ -262,18 +277,85 @@ int main(){
 	
 	//pass two
 	int testX = 0;
-	int other = 0;
 	char cal[4] = {};
 	
-	for(int i = 0;i < SSize;i++){  //run every source
+	/*object code*/
+	for(int i = 0;i < SSize-1;i++){  //run every source
 		testX = 0;
-		other = 0;
+		//RESW RESB
+		if(strcmp(source[i].type,"RESW") == 0 || strcmp(source[i].type,"RESB") == 0){
+			continue;
+		}
+		else if(strcmp(source[i].type,"RSUB") == 0){
+			for(int j = 0;j < opSize;j++){  
+				if(strcmp(source[i].type,opcode[j].operate) == 0){
+					source[i].objectCode[0] = opcode[j].operateCode[0];
+					source[i].objectCode[1] = opcode[j].operateCode[1];
+						
+					break;
+				}
+			}
+			strcat(source[i].objectCode,"0000");
+			continue;
+			
+		}
+		//WORD BYTE
+		if(strcmp(source[i].type,"WORD") == 0){
+			int w = 0;
+			run = 0;
+			while(source[i].content[run] != '\0'){
+				w = w*10 + source[i].content[run] - '0';
+				run++;
+			}
+			sprintf(source[i].objectCode,"%06X",w);
+			continue;	
+		}
+		else if(strcmp(source[i].type,"BYTE") == 0){
+			if(source[i].content[0] == 'C'){
+				int Ctop = 0;
+				run = 0;
+				char word[3] = {};
+				char buff[2] = {};
+				while(source[i].content[run] != '\0'){
+					if(source[i].content[run] != 'C' && source[i].content[run] != '\''){
+						word[Ctop] = source[i].content[run];
+						Ctop++;
+					}
+					run++;
+				}
+				
+				for(int j = 0;j < Ctop;j++){
+					sprintf(buff,"%X",word[j]);
+					if(j == 0){
+						strcpy(source[i].objectCode,buff);
+					}
+					else{
+						strcat(source[i].objectCode,buff);
+					}	
+				}
+			}
+			else if(source[i].content[0] == 'X'){
+				int Xtop = 0;
+				run = 0;
+				while(source[i].content[run] != '\0'){
+					if(source[i].content[run] != 'X' && source[i].content[run] != '\''){
+						source[i].objectCode[Xtop] = source[i].content[run];
+						Xtop++;
+					}
+					
+					run++;
+				}
+			}
+			continue;
+		}
+		
+		
+		
 		//opCode
 		for(int j = 0;j < opSize;j++){  
 			if(strcmp(source[i].type,opcode[j].operate) == 0){
 				source[i].objectCode[0] = opcode[j].operateCode[0];
 				source[i].objectCode[1] = opcode[j].operateCode[1];
-				
 				break;
 			}
 		}
@@ -291,24 +373,89 @@ int main(){
 			run++;
 		}
 		
-		if(testX == 1){  //有 ",X" 
+		if(testX == 1){  //有 ",X"
+			int add; 
+			char op[16] = {};
+			run = 0;
+			while(source[i].content[run] != ','){
+				op[run] = source[i].content[run];
+				run++;
+			}
+			for(int j = 0;j < top;j++){
+				if(strcmp(op,symbol[j].label) == 0){
+					add = symbol[j].address + (16*16*16*8);
+					sprintf(cal,"%X",add);
+					strcat(source[i].objectCode,cal);
+					break;
+					 
+				}	
+			}
 			
 		}
 		else if(testX == 0){  //沒有 ",X" 
 			for(int j = 0;j < top;j++){
 				if(strcmp(source[i].content,symbol[j].label) == 0){
-					
 					sprintf(cal,"%X",symbol[j].address);
-					printf("%s\n",cal);
+					strcat(source[i].objectCode,cal);
 					break;
 					 
-				}
-				
+				}	
 			}
 		}
 		
 		
 	}
+	
+	/*end of object code*/
+	
+	/*write in sourceProgram.txt*/
+	FILE *object;
+	object = fopen("sourceProgram.txt","w");
+	fprintf(object,"Loc\t\tSource Statment\t\tObject Code\n\n");
+	for(int i = 0;i < SSize;i++){
+		if(strcmp(source[i].type,"END") == 0){
+			fprintf(object," \t \t%s\t%s\n",source[i].type,source[i].content);
+		}
+		else if(strcmp(source[i].type,"START") == 0){
+			fprintf(object,"%X\t%s\t%s\t%s\n",source[i].location,source[i].name,source[i].type,source[i].content);
+		}
+		else if(source[i].objectCode[0] == '\0'){
+			fprintf(object,"%X\t%s\t%s\t%s\n",source[i].location,source[i].name,source[i].type,source[i].content);
+		}
+		else if(source[i].name[0] == '\0' && source[i].content[0] != '\0'){
+			run = 0;
+			int X = 0;
+			while(source[i].content[run] != '\0'){
+				if(source[i].content[run] == ','){
+					if(source[i].content[run+1] == 'X'){
+						X = 1;
+						break;
+					}
+				}
+				run++;
+			}
+			if(X == 1){
+				fprintf(object,"%X\t \t%s\t%s\t%s\n",source[i].location,source[i].type,source[i].content,source[i].objectCode);
+			}
+			else{
+				fprintf(object,"%X\t \t%s\t%s\t\t%s\n",source[i].location,source[i].type,source[i].content,source[i].objectCode);
+			}
+			
+		}
+		else if(source[i].name[0] != '\0' && source[i].content[0] == '\0'){
+			fprintf(object,"%X\t%s\t%s\t \t\t%s\n",source[i].location,source[i].name,source[i].type,source[i].objectCode);
+		}
+		else if(source[i].name[0] == '\0' && source[i].content[0] == '\0'){
+			fprintf(object,"%X\t \t%s\t \t\t%s\n",source[i].location,source[i].type,source[i].objectCode);
+		}
+		else{
+			fprintf(object,"%X\t%s\t%s\t%s\t\t%s\n",source[i].location,source[i].name,source[i].type,source[i].content,source[i].objectCode);
+		}
+		
+	}
+	fclose(object);  //關檔
+	/*end of write in sourceProgram.txt*/
+	
 	
 	system("PAUSE");
 	return 0;
