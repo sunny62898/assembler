@@ -185,7 +185,7 @@ int main(){
 	source[1].location = source[0].location;
 	//other
 	int count = 0;
-	for(int i = 2;i < SSize-1;i++){
+	for(int i = 2;i < SSize;i++){
 		if(strcmp(source[i-1].type,"BYTE")  == 0){
 			if(source[i-1].content[0] == 'X'){
 				source[i].location = source[i-1].location+1;
@@ -456,6 +456,137 @@ int main(){
 	fclose(object);  //關檔
 	/*end of write in sourceProgram.txt*/
 	
+	/*final object program*/
+	/*int outputL = 0;
+	int enter = 1;
+	int first = 0;
+	printf("H%s\t%06X%06X\n",source[0].name,source[0].location,(source[SSize-1].location-source[0].location));
+	printf("T%06X",source[1].location);
+	//count length
+	int firstnum = 1;
+	int countFL = 0;
+	while(source[firstnum].objectCode[0] != '\0'){
+		countFL++;
+		firstnum++;
+		if(countFL == 10){
+			break;
+		}
+	}
+	printf("%02X",(source[1+countFL].location-source[1].location));
+	//印出其他的object program 
+	for(int i = 1;i < SSize-1;i++){
+		if(source[i].objectCode[0] == '\0'){
+			outputL = 0;
+			printf("\n");
+			run = i+1;
+			while(source[run].objectCode[0] == '\0'){
+				run++;
+			}
+			printf("T%06X",source[run].location);
+			//count length
+			i = run;
+			int countN = 0;
+			while(source[run].objectCode[0] != '\0'){
+				countN++;
+				run++;
+				if(countN == 10){
+					break;
+				}
+			}
+			printf("%02X",(source[i+countN].location-source[i].location));
+			i--;
+			continue;
+		}
+		else if(outputL == 10){
+			outputL = 1;
+			printf("\n");
+			printf("T%06X",source[i].location);
+			//count length
+			run = i;
+			int countN = 0;
+			while(source[run].objectCode[0] != '\0'){
+				countN++;
+				run++;
+				if(countN == 10){
+					break;
+				}
+			}
+			printf("%02X",(source[i+countN].location-source[i].location));
+			printf("%s",source[i].objectCode);
+			continue;
+		}
+		printf("%s",source[i].objectCode);
+		outputL++;
+	}
+	printf("\nE%06X\n",source[0].location);*/
+	/*end of test output*/
+	
+	/*write in objectprogram.txt*/
+	FILE *program;
+	program = fopen("objectprogram.txt","w");
+	int outputL = 0;
+	int enter = 1;
+	int first = 0;
+	fprintf(program,"H%s\t%06X%06X\n",source[0].name,source[0].location,(source[SSize-1].location-source[0].location));
+	fprintf(program,"T%06X",source[1].location);
+	//count length
+	int firstnum = 1;
+	int countFL = 0;
+	while(source[firstnum].objectCode[0] != '\0'){
+		countFL++;
+		firstnum++;
+		if(countFL == 10){
+			break;
+		}
+	}
+	fprintf(program,"%02X",(source[1+countFL].location-source[1].location));
+	//印出其他的object program 
+	for(int i = 1;i < SSize-1;i++){
+		if(source[i].objectCode[0] == '\0'){
+			outputL = 0;
+			fprintf(program,"\n");
+			run = i+1;
+			while(source[run].objectCode[0] == '\0'){
+				run++;
+			}
+			fprintf(program,"T%06X",source[run].location);
+			//count length
+			i = run;
+			int countN = 0;
+			while(source[run].objectCode[0] != '\0'){
+				countN++;
+				run++;
+				if(countN == 10){
+					break;
+				}
+			}
+			fprintf(program,"%02X",(source[i+countN].location-source[i].location));
+			i--;
+			continue;
+		}
+		else if(outputL == 10){
+			outputL = 1;
+			fprintf(program,"\n");
+			fprintf(program,"T%06X",source[i].location);
+			//count length
+			run = i;
+			int countN = 0;
+			while(source[run].objectCode[0] != '\0'){
+				countN++;
+				run++;
+				if(countN == 10){
+					break;
+				}
+			}
+			fprintf(program,"%02X",(source[i+countN].location-source[i].location));
+			fprintf(program,"%s",source[i].objectCode);
+			continue;
+		}
+		fprintf(program,"%s",source[i].objectCode);
+		outputL++;
+	}
+	fprintf(program,"\nE%06X\n",source[0].location);
+	fclose(program);
 	
 	system("PAUSE");
 	return 0;
