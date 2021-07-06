@@ -457,69 +457,6 @@ int main(){
 	/*end of write in sourceProgram.txt*/
 	
 	/*final object program*/
-	/*int outputL = 0;
-	int enter = 1;
-	int first = 0;
-	printf("H%s\t%06X%06X\n",source[0].name,source[0].location,(source[SSize-1].location-source[0].location));
-	printf("T%06X",source[1].location);
-	//count length
-	int firstnum = 1;
-	int countFL = 0;
-	while(source[firstnum].objectCode[0] != '\0'){
-		countFL++;
-		firstnum++;
-		if(countFL == 10){
-			break;
-		}
-	}
-	printf("%02X",(source[1+countFL].location-source[1].location));
-	//印出其他的object program 
-	for(int i = 1;i < SSize-1;i++){
-		if(source[i].objectCode[0] == '\0'){
-			outputL = 0;
-			printf("\n");
-			run = i+1;
-			while(source[run].objectCode[0] == '\0'){
-				run++;
-			}
-			printf("T%06X",source[run].location);
-			//count length
-			i = run;
-			int countN = 0;
-			while(source[run].objectCode[0] != '\0'){
-				countN++;
-				run++;
-				if(countN == 10){
-					break;
-				}
-			}
-			printf("%02X",(source[i+countN].location-source[i].location));
-			i--;
-			continue;
-		}
-		else if(outputL == 10){
-			outputL = 1;
-			printf("\n");
-			printf("T%06X",source[i].location);
-			//count length
-			run = i;
-			int countN = 0;
-			while(source[run].objectCode[0] != '\0'){
-				countN++;
-				run++;
-				if(countN == 10){
-					break;
-				}
-			}
-			printf("%02X",(source[i+countN].location-source[i].location));
-			printf("%s",source[i].objectCode);
-			continue;
-		}
-		printf("%s",source[i].objectCode);
-		outputL++;
-	}
-	printf("\nE%06X\n",source[0].location);*/
-	/*end of test output*/
 	
 	/*write in objectprogram.txt*/
 	FILE *program;
@@ -587,6 +524,8 @@ int main(){
 	}
 	fprintf(program,"\nE%06X\n",source[0].location);
 	fclose(program);
+	/*end of final object program*/
+	//end of pass two
 	
 	system("PAUSE");
 	return 0;
